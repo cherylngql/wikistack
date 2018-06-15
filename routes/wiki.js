@@ -12,11 +12,19 @@ router.post('/', async (req, res, next) => {
   const page = new Page({
     title: req.body.title,
     content: req.body.content,
-    status: req.body.status
+    status: req.body.status,
+    author: req.body.author,
+    email: req.body.email
   });
   // make sure we only redirect *after* our save is complete!
   // note: `.save` returns a promise.
   try {
+    let author = await User.findOne({
+      where: {
+        name: page.author,
+        email: page.email
+      }
+    });
     await page.save();
     res.redirect(`/wiki/${page.slug}`);
   } catch (error) { next(error) }

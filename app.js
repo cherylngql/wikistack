@@ -25,7 +25,7 @@ app.use('/users', usersRoutes);
 
 const PORT = 3000;
 const init = async () => {
-  await db.sync();
+  await db.sync({force: true});
   app.listen(PORT, () => {
     console.log(`App listening in port ${PORT}`);
   });
