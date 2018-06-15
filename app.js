@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const { db } = require('./models');
-const routes = require('./routes/mainRoute');
+const wikiRoutes = require('./routes/wiki');
 
 const app = express();
 db.authenticate().
@@ -19,10 +19,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.use('/', routes);
+app.use('/wiki', wikiRoutes);
 
 const PORT = 3000;
-console.log('this is db: ', db.User);
 const init = async () => {
   await db.sync({force: true});
   app.listen(PORT, () => {
