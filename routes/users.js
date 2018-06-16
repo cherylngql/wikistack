@@ -1,14 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const index = require('../views/index');
+const { User } = require('../models');
+const { Page } = require('../models');
 
-router.get('/', (req, res, next) => {
-  res.send('this directs to /users');
+router.get('/', async (req, res, next) => {
+  try {
+    const users = await User.findAll();
+    res.send(index.userList(users));
+  } catch (err) {next(err)}
 });
 
-router.get('/:id', (req, res, next) => {
-  const id = req.params.id;
-  res.send(`this directs to /users/${id}`);
+router.get('/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findOne({where: {
+      id: id
+    }});
+    const pages = await Page.findAll({
+      where: {authorId: user.id}
+    });
+    res.send(index.userPages(user, pages));
+  } catch (err) {next(err)}
 });
 
 router.post('/', (req, res, next) => {

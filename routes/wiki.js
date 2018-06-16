@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const index = require('../views/index');
 const { Page } = require('../models');
+const { User } = require('../models');
 
 router.get('/', async (req, res, next) => {
   const pages = await Page.findAll({where:{}});
@@ -9,23 +10,18 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-  const page = new Page({
-    title: req.body.title,
-    content: req.body.content,
-    status: req.body.status,
-    author: req.body.author,
-    email: req.body.email
-  });
   // make sure we only redirect *after* our save is complete!
   // note: `.save` returns a promise.
   try {
-    let author = await User.findOne({
+    const page = await Page.create(req.body);
+    const users = await User.findOrCreate({
       where: {
-        name: page.author,
-        email: page.email
+        name: req.body.author, // cannot use page.author because our schema doesn't have author for page
+        email: req.body.email
       }
     });
-    await page.save();
+    const user = users[0];
+    page.setAuthor(user);
     res.redirect(`/wiki/${page.slug}`);
   } catch (error) { next(error) }
 });
@@ -40,7 +36,8 @@ router.get('/:slug', async (req, res, next) => {
     const page = await Page.findOne({
       where: {slug: someSlug}
     });
-    res.send(index.wikiPage(page));
+    const user = await page.getAuthor();
+    res.send(index.wikiPage(page, user));
   } catch (err) {next(err)}
 });
 
